@@ -8,4 +8,23 @@ Dependencies:	 Arduino & SST25VF004, SST25VF016, SST25VF064, etc Nor Serial Flas
 ```
 
 Much of the code in the library is Based on SST code from: (Rugged Circuits and Wusik)
-Should work for SST25VF004, SST25VF016, SST25VF064, etc.               
+Should work for SST25VF004, SST25VF016, SST25VF064, etc. 
+
+### List of Functions
+
+```cpp
+void begin(int chipSelect,int writeProtect,int hold);
+void update();
+void readID();
+void totalErase();
+void sectorErase(uint8_t sectorAddress);
+	
+void readInit(uint32_t address);
+uint8_t readNext();
+void readFinish();
+void readArray(uint32_t address,uint8_t dataBuffer[],uint16_t dataLength);
+	
+void writeByte(uint32_t address, uint8_t data);
+uint32_t writeArray(uint32_t address,const uint8_t dataBuffer[],uint16_t dataLength);
+```
+
