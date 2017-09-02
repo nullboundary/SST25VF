@@ -53,7 +53,6 @@ void SST25VF::update(){
 void SST25VF::waitUntilDone()
 {
   uint8_t data = 0;
-  //SPI.beginTransaction(sstSPISettings);
   while (1)
   {
     
@@ -64,7 +63,7 @@ void SST25VF::waitUntilDone()
     if (!bitRead(data,0)) break;
     nop();
   }
-  //SPI.endTransaction();
+
 }
 
 // ======================================================================================= //
