@@ -25,23 +25,21 @@ void SST25VF::begin(int chipSelect,int writeProtect,int hold){
 	FLASH_Wp = writeProtect;
 	FLASH_Hold = hold; 
 	
-   	  SPI.begin();
-	  SPI.setDataMode(SPI_MODE0);
-	
-	  pinMode(FLASH_Wp, OUTPUT); 
-	  digitalWrite(FLASH_Wp, HIGH); //write protect off
+  pinMode(FLASH_Wp, OUTPUT); 
+  digitalWrite(FLASH_Wp, HIGH); //write protect off
 
-	  pinMode(FLASH_Hold, OUTPUT); 
-	  digitalWrite(FLASH_Hold, HIGH); //mem hold off
+  pinMode(FLASH_Hold, OUTPUT); 
+  digitalWrite(FLASH_Hold, HIGH); //mem hold off
+
+  pinMode(FLASH_SSn, OUTPUT); //chip select 
+  digitalWrite(FLASH_SSn, HIGH);
+  digitalWrite(FLASH_SSn, LOW);
+  
+  sstSPISettings = SPISettings(SST25VF_SPI_CLOCK, SST25VF_SPI_BIT_ORDER, SST25VF_SPI_MODE);
+  SPI.begin();
 	
-	  pinMode(FLASH_SSn, OUTPUT); //chip select 
-	  digitalWrite(FLASH_SSn, HIGH);
-	  digitalWrite(FLASH_SSn, LOW);
-	  SPI.setBitOrder(MSBFIRST);
-	
-	  init(); 
-	  readID();
-	
+  init(); 
+	readID();
 }
  
 
@@ -57,6 +55,7 @@ void SST25VF::waitUntilDone()
   uint8_t data = 0;
   while (1)
   {
+    
     digitalWrite(FLASH_SSn,LOW);
     (void) SPI.transfer(0x05);
     data = SPI.transfer(0);
@@ -64,13 +63,15 @@ void SST25VF::waitUntilDone()
     if (!bitRead(data,0)) break;
     nop();
   }
+
 }
 
 // ======================================================================================= //
 
 void SST25VF::init()
 {
-  enable();
+  SPI.beginTransaction(sstSPISettings);
+  
   digitalWrite(FLASH_SSn,LOW);
   SPI.transfer(0x50); //enable write status register instruction
   digitalWrite(FLASH_SSn,HIGH);
@@ -80,7 +81,9 @@ void SST25VF::init()
   SPI.transfer(0x00);//value to write to register - xx0000xx will remove all block protection
   digitalWrite(FLASH_SSn,HIGH);
   delay(50);
-  disable();
+  SPI.endTransaction();
+
+  
 }
 
 // ======================================================================================= //
@@ -88,7 +91,7 @@ void SST25VF::init()
 void SST25VF::readID()
 {
   uint8_t id, mtype, dev;
-  enable();
+  SPI.beginTransaction(sstSPISettings);
   digitalWrite(FLASH_SSn,LOW);
   (void) SPI.transfer(0x9F); // Read ID command
   id = SPI.transfer(0);
@@ -99,14 +102,14 @@ void SST25VF::readID()
   Serial.print("SPI ID ");
   Serial.println(buf);
   digitalWrite(FLASH_SSn,HIGH);
-  disable();
+  SPI.endTransaction();;
 }
 
 // ======================================================================================= //
 
 void SST25VF::totalErase()
 {
-  enable();
+  SPI.beginTransaction(sstSPISettings);
   digitalWrite(FLASH_SSn,LOW);
   SPI.transfer(0x06);//write enable instruction
   digitalWrite(FLASH_SSn,HIGH);
@@ -115,7 +118,7 @@ void SST25VF::totalErase()
   (void) SPI.transfer(0x60); // Erase Chip //
   digitalWrite(FLASH_SSn, HIGH);
   waitUntilDone();
-  disable();
+  SPI.endTransaction();;
 }
 
 // ======================================================================================= //
@@ -131,7 +134,7 @@ void SST25VF::setAddress(uint32_t addr)
 
 void SST25VF::readInit(uint32_t address)
 {
-  enable();
+  SPI.beginTransaction(sstSPISettings);
   digitalWrite(FLASH_SSn,LOW);
   (void) SPI.transfer(0x03); // Read Memory - 25/33 Mhz //
   setAddress(address);
@@ -149,14 +152,14 @@ uint8_t SST25VF::readNext() {
 void SST25VF::readFinish()
 {
   digitalWrite(FLASH_SSn,HIGH);
-  disable();
+  SPI.endTransaction();;
 }
 
 // ======================================================================================= //
 
 void SST25VF::writeByte(uint32_t address, uint8_t data)
 {
-  enable();
+  SPI.beginTransaction(sstSPISettings);
   digitalWrite(FLASH_SSn,LOW);
   SPI.transfer(0x06);//write enable instruction
   digitalWrite(FLASH_SSn,HIGH);
@@ -167,7 +170,7 @@ void SST25VF::writeByte(uint32_t address, uint8_t data)
   (void) SPI.transfer(data);
   digitalWrite(FLASH_SSn,HIGH);
   waitUntilDone();
-  disable();
+  SPI.endTransaction();;
 }
 
 uint32_t SST25VF::writeArray(uint32_t address,const uint8_t dataBuffer[],uint16_t dataLength)
@@ -197,7 +200,7 @@ void SST25VF::readArray(uint32_t address,uint8_t dataBuffer[],uint16_t dataLengt
 
 void SST25VF::sectorErase(uint8_t sectorAddress)
 {
-  enable();
+  SPI.beginTransaction(sstSPISettings);
   digitalWrite(FLASH_SSn,LOW);
   SPI.transfer(0x06);//write enable instruction
   digitalWrite(FLASH_SSn,HIGH);
@@ -207,5 +210,5 @@ void SST25VF::sectorErase(uint8_t sectorAddress)
   setAddress(4096UL*long(sectorAddress));
   digitalWrite(FLASH_SSn,HIGH);
   waitUntilDone();
-  disable();
+  SPI.endTransaction();;
 }

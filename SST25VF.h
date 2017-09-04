@@ -1,12 +1,13 @@
 /************************************************************************************
  * 	
- * 	Name    : SST25VF.h                        
- * 	Author  : Noah Shibley                         
- * 	Date    : Aug 17th, 2013                                    
- * 	Version : 0.1                                              
- * 	Notes   : Nor Serial Flash 16Mbit (2Mbytes) - S71295 (SST) 2097152 bytes.
- *			  Based on SST code from: www.Beat707.com design. (Rugged Circuits and Wusik)
- *			  Should work for SST25VF004, SST25VF016, SST25VF064, etc.                 
+ * 	Name    	: SST25VF.h                        
+ * 	Author  	: Noah Shibley
+ *	Contributors: Ubi de Feo [SPI Transactions implementation]                   
+ * 	Date    	: Aug 17th, 2013                                    
+ * 	Version 	: 0.1                                              
+ * 	Notes   	: Nor Serial Flash 16Mbit (2Mbytes) - S71295 (SST) 2097152 bytes.
+ *				  Based on SST code from: www.Beat707.com design. (Rugged Circuits and Wusik)
+ *				  Should work for SST25VF004, SST25VF016, SST25VF064, etc.                 
  * 
  * 	
  * 
@@ -21,6 +22,10 @@
 
 #define FLASH_MAX_BYTES 2097152 //this chip contains this much storage
 #define FLASH_MAX_SECTOR 512 //each sector is 4096 bytes
+
+#define SST25VF_SPI_MODE SPI_MODE0
+#define SST25VF_SPI_CLOCK F_CPU
+#define SST25VF_SPI_BIT_ORDER MSBFIRST
 
 class SST25VF {
  
@@ -54,10 +59,8 @@ private:
 	
 	void waitUntilDone();
 	void setAddress(uint32_t addr);
-	void enable()    { SPI.setBitOrder(MSBFIRST); nop(); }
-	void disable()   { SPI.setBitOrder(LSBFIRST); nop(); }
 	inline void volatile nop(void) { asm __volatile__ ("nop"); }
-	
+	SPISettings sstSPISettings;
  
 }; 
  
