@@ -28,3 +28,6 @@ void writeByte(uint32_t address, uint8_t data);
 uint32_t writeArray(uint32_t address,const uint8_t dataBuffer[],uint16_t dataLength);
 ```
 
+### Contributors
+
+* [Ubi de Feo](https://github.com/ubidefeo)
