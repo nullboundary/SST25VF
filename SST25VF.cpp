@@ -37,7 +37,7 @@ void SST25VF::begin(int chipSelect,int writeProtect,int hold){
   
   sstSPISettings = SPISettings(SST25VF_SPI_CLOCK, SST25VF_SPI_BIT_ORDER, SST25VF_SPI_MODE);
   SPI.begin();
-	
+	SPI.usingInterrupt(255);
   init(); 
 	readID();
 }
